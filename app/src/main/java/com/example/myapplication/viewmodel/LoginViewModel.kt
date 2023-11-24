@@ -2,6 +2,7 @@ package com.example.myapplication.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -16,6 +17,8 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class LoginViewModel (private val pref: UserPreferences):ViewModel() {
+    private val _isSuccess=MutableLiveData<Boolean>()
+    val isSuccess:MutableLiveData<Boolean> = _isSuccess
     fun login(email:String,password:String){
         val loginInformation=LoginInformation(email,password)
         val client= ApiConfig.getApiService().login(loginInformation)
@@ -30,12 +33,16 @@ class LoginViewModel (private val pref: UserPreferences):ViewModel() {
                             responseBody.token,
                             true
                         )
+                        _isSuccess.value=true
                         saveUser(userModel)
                     }
+                }else{
+                    _isSuccess.value=false
                 }
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                _isSuccess.value=false
                 Log.d(TAG,"onFailure:${t.message}")
             }
         })
